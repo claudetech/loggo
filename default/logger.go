@@ -9,7 +9,7 @@ import (
 var Log *loggo.Logger = func() *loggo.Logger {
 	name := strings.TrimLeft(strings.ToUpper(os.Args[0]), "./")
 	log := loggo.New(name)
-	log.AddColoredAppenderWithFilter(loggo.NewStdoutAppender(), &loggo.MaxLogLevelFilter{MaxLevel: loggo.Info})
-	log.AddColoredAppenderWithFilter(loggo.NewStderrAppender(), &loggo.MinLogLevelFilter{MinLevel: loggo.Warning})
+	log.AddAppenderWithFilter(loggo.NewStdoutAppender(), &loggo.MaxLogLevelFilter{MaxLevel: loggo.Info}, loggo.Color)
+	log.AddAppenderWithFilter(loggo.NewStderrAppender(), &loggo.MinLogLevelFilter{MinLevel: loggo.Warning}, loggo.Color)
 	return log
 }()
