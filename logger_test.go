@@ -76,7 +76,7 @@ var _ = Describe("Logger", func() {
 		Expect(appender.str).To(Equal(expected))
 	})
 
-	It("should respect format", func() {
+	It("should respect template", func() {
 		logger.SetFormat("{{.Content}}")
 		logger.Debug(content)
 		Expect(appender.str).To(Equal(content + "\n"))
@@ -87,5 +87,12 @@ var _ = Describe("Logger", func() {
 		logger.EnablePadding()
 		logger.Debug("foo")
 		Expect(appender.str).To(Equal("DEBUG  :\n"))
+	})
+
+	It("should work with format", func() {
+		logger.SetFormat("{{.Content}}")
+		logger.Debugf("%s: %d + %.1f = %.1f", "Eq", 1, 1.1, 2.1)
+		Expect(appender.str).To(Equal("Eq: 1 + 1.1 = 2.1\n"))
+
 	})
 })

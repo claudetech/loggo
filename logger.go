@@ -1,6 +1,7 @@
 package loggo
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 	"text/template"
@@ -126,28 +127,52 @@ func (l *Logger) DisableColor() {
 	l.color = true
 }
 
-func (l *Logger) Verbose(content string) {
-	l.Log(Verbose, content)
+func (l *Logger) Verbosef(format string, v ...interface{}) {
+	l.Logf(Verbose, format, v...)
 }
 
-func (l *Logger) Debug(content string) {
-	l.Log(Debug, content)
+func (l *Logger) Debugf(format string, v ...interface{}) {
+	l.Logf(Debug, format, v...)
 }
 
-func (l *Logger) Info(content string) {
-	l.Log(Info, content)
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.Logf(Info, format, v...)
 }
 
-func (l *Logger) Warning(content string) {
-	l.Log(Warning, content)
+func (l *Logger) Warningf(format string, v ...interface{}) {
+	l.Logf(Warning, format, v...)
 }
 
-func (l *Logger) Error(content string) {
-	l.Log(Error, content)
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.Logf(Error, format, v...)
 }
 
-func (l *Logger) Critical(content string) {
-	l.Log(Critical, content)
+func (l *Logger) Criticalf(format string, v ...interface{}) {
+	l.Logf(Critical, format, v...)
+}
+
+func (l *Logger) Verbose(v ...interface{}) {
+	l.Log(Verbose, v...)
+}
+
+func (l *Logger) Debug(v ...interface{}) {
+	l.Log(Debug, v...)
+}
+
+func (l *Logger) Info(v ...interface{}) {
+	l.Log(Info, v...)
+}
+
+func (l *Logger) Warning(v ...interface{}) {
+	l.Log(Warning, v...)
+}
+
+func (l *Logger) Error(v ...interface{}) {
+	l.Log(Error, v...)
+}
+
+func (l *Logger) Critical(v ...interface{}) {
+	l.Log(Critical, v...)
 }
 
 func (l *Logger) EnablePadding() {
@@ -158,11 +183,16 @@ func (l *Logger) DisablePadding() {
 	l.padding = false
 }
 
-func (l *Logger) Log(level Level, content string) {
+func (l *Logger) Logf(level Level, format string, v ...interface{}) {
+	msg := fmt.Sprintf(format, v...)
+	l.Log(level, msg)
+}
+
+func (l *Logger) Log(level Level, v ...interface{}) {
 	msg := &Message{
 		Name:       l.Name(),
 		Level:      level,
-		Content:    content,
+		Content:    fmt.Sprint(v...),
 		Time:       l.nowFunc(),
 		dateFormat: l.DateFormat(),
 		padding:    l.padding,

@@ -2,6 +2,7 @@ package loggo
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/mgutz/ansi"
 	"text/template"
 	"time"
@@ -10,7 +11,7 @@ import (
 type Message struct {
 	Name       string
 	Level      Level
-	Content    string
+	Content    interface{}
 	Time       time.Time
 	dateFormat string
 	padding    bool
@@ -32,7 +33,7 @@ func (m *Message) String() string {
 	buffer := bytes.NewBufferString("")
 	err := m.tpl.Execute(buffer, m)
 	if err != nil {
-		return m.Content
+		return fmt.Sprintf("%s\n", m.Content)
 	}
 	str := buffer.String()
 	if m.color {
