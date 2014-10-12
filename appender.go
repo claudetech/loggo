@@ -42,3 +42,15 @@ func NewStdoutAppender() Appender {
 func NewStderrAppender() Appender {
 	return &writerAppender{writer: os.Stderr}
 }
+
+func NewFileAppender(path string) (Appender, error) {
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0664)
+	return NewWriterAppender(f), err
+}
+
+func (w *writerAppender) Close() error {
+	if closer, ok := w.writer.(io.Closer); ok {
+		return closer.Close()
+	}
+	return nil
+}
