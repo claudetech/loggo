@@ -10,7 +10,7 @@ type appenderContainer struct {
 	appender Appender
 	filter   Filter
 	color    bool
-	mutex    sync.Mutex
+	wlock    sync.Mutex
 }
 
 type Appender interface {

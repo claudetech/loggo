@@ -202,8 +202,8 @@ func (l *Logger) Log(level Level, v ...interface{}) {
 }
 
 func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
-	container.mutex.Lock()
-	defer container.mutex.Unlock()
+	container.wlock.Lock()
+	defer container.wlock.Unlock()
 	container.appender.Append(msg)
 }
 
