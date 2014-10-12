@@ -2,6 +2,7 @@ package loggo
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 	"text/template"
@@ -187,6 +188,23 @@ func (l *Logger) Log(level Level, v ...interface{}) {
 		tpl:        l.tpl,
 	}
 	l.log(msg)
+}
+
+func (l *Logger) destroyAppender(appender Appender) error {
+	if closer, ok := appender.(io.Closer); ok {
+		return closer.Close()
+	}
+	return nil
+}
+
+func (l *Logger) Destroy() (err error) {
+	for _, container := range l.appenders {
+		if e := l.destroyAppender(container.appender); e != nil {
+			err = e
+		}
+	}
+	l.appenders = nil
+	return
 }
 
 func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {

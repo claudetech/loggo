@@ -104,4 +104,9 @@ var _ = Describe("Logger", func() {
 		time.Sleep(10 * time.Millisecond) // not very safe way to check
 		Expect(appender.str).To(Equal("foo\nfoo\n"))
 	})
+
+	It("should be destroyed", func() {
+		logger.Destroy()
+		Expect(logger.appenders).To(BeEmpty())
+	})
 })
