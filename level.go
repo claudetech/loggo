@@ -23,6 +23,6 @@ func (l Level) String() string {
 	case Error:
 		return "ERROR"
 	default:
-		return "UNKNOW"
+		return "UNKNOWN"
 	}
 }
