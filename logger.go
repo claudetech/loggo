@@ -1,7 +1,6 @@
 package loggo
 
 import (
-	"github.com/mgutz/ansi"
 	"strings"
 	"text/template"
 	"time"
@@ -165,6 +164,7 @@ func (l *Logger) Log(level Level, content string) {
 		Time:       l.nowFunc(),
 		dateFormat: l.DateFormat(),
 		padding:    l.padding,
+		tpl:        l.tpl,
 	}
 	l.log(msg)
 }
@@ -176,11 +176,8 @@ func (l *Logger) log(msg *Message) {
 
 	for _, appenderContainer := range l.appenders {
 		if appenderContainer.filter == nil || appenderContainer.filter.ShouldLog(msg) {
-			str := msg.Format(l.tpl)
-			if l.color && appenderContainer.color {
-				str = ansi.Color(str, Colors[msg.Level])
-			}
-			appenderContainer.appender.Append(str, msg.Level)
+			msg.color = l.color && appenderContainer.color
+			appenderContainer.appender.Append(msg)
 		}
 	}
 }

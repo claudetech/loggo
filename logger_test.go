@@ -12,8 +12,8 @@ type dummyAppender struct {
 	str string
 }
 
-func (d *dummyAppender) Append(msg string, level Level) {
-	d.str += msg
+func (d *dummyAppender) Append(msg *Message) {
+	d.str += msg.String()
 }
 
 func dummyTime() time.Time {

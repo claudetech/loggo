@@ -21,34 +21,35 @@ var _ = Describe("Message", func() {
 	}
 
 	BeforeEach(func() {
+		tpl, _ = template.New("foo").Parse(defaultFormat)
 		msg = &Message{
 			Name:       name,
 			Level:      Debug,
 			Content:    content,
 			Time:       dummyTime(),
 			dateFormat: defaultDateFormat,
+			tpl:        tpl,
 		}
-		tpl, _ = template.New("foo").Parse(defaultFormat)
 	})
 
 	It("should format message", func() {
-		Expect(msg.Format(tpl)).To(Equal(getString(tpl, msg)))
+		Expect(msg.String()).To(Equal(getString(tpl, msg)))
 	})
 
 	It("should respect template", func() {
-		tpl, _ := template.New("foo").Parse("{{.Content}}")
-		Expect(msg.Format(tpl)).To(Equal(content))
+		msg.tpl, _ = template.New("foo").Parse("{{.Content}}")
+		Expect(msg.String()).To(Equal(content))
 	})
 
 	It("should use date format", func() {
 		f := "Jan 2, 2006 at 15:04pm (MST)"
 		msg.dateFormat = f
-		Expect(msg.Format(tpl)).To(ContainSubstring(msg.Time.Format(f)))
+		Expect(msg.String()).To(ContainSubstring(msg.Time.Format(f)))
 	})
 
 	It("should work with padding", func() {
 		msg.padding = true
-		tpl, _ := template.New("foo").Parse("{{.LevelStr}}:")
-		Expect(msg.Format(tpl)).To(Equal("DEBUG  :"))
+		msg.tpl, _ = template.New("foo").Parse("{{.LevelStr}}:")
+		Expect(msg.String()).To(Equal("DEBUG  :"))
 	})
 })

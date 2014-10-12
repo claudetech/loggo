@@ -12,15 +12,15 @@ type appenderWithFilter struct {
 }
 
 type Appender interface {
-	Append(string, Level)
+	Append(*Message)
 }
 
 type writerAppender struct {
 	writer io.Writer
 }
 
-func (w *writerAppender) Append(s string, level Level) {
-	_, _ = io.WriteString(w.writer, s)
+func (w *writerAppender) Append(msg *Message) {
+	_, _ = io.WriteString(w.writer, msg.String())
 }
 
 func NewWriterAppender(writer io.Writer) Appender {

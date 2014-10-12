@@ -2,6 +2,7 @@ package loggo
 
 import (
 	"bytes"
+	"github.com/mgutz/ansi"
 	"text/template"
 	"time"
 )
@@ -13,6 +14,8 @@ type Message struct {
 	Time       time.Time
 	dateFormat string
 	padding    bool
+	color      bool
+	tpl        *template.Template
 }
 
 func (m *Message) LevelStr() string {
@@ -25,13 +28,17 @@ func (m *Message) LevelStr() string {
 	return str
 }
 
-func (m *Message) Format(tpl *template.Template) string {
+func (m *Message) String() string {
 	buffer := bytes.NewBufferString("")
-	err := tpl.Execute(buffer, m)
+	err := m.tpl.Execute(buffer, m)
 	if err != nil {
 		return m.Content
 	}
-	return buffer.String()
+	str := buffer.String()
+	if m.color {
+		str = ansi.Color(str, Colors[m.Level])
+	}
+	return str
 }
 
 func (m *Message) TimeStr() string {
