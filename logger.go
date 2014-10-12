@@ -8,7 +8,7 @@ import (
 
 const (
 	defaultFormat     = "[{{.Name}}] [{{.TimeStr}}] {{.LevelStr}}: {{.Content}}\n"
-	defaultDateFormat = "2006-02-01 15:04"
+	defaultDateFormat = "2006-01-02 15:04"
 )
 
 type Logger struct {
