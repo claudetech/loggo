@@ -2,6 +2,7 @@ package loggo
 
 import (
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 )
@@ -16,12 +17,13 @@ type Logger struct {
 	format     string
 	tpl        *template.Template
 	level      Level
-	appenders  []*appenderWithFilter
+	appenders  []*appenderContainer
 	linebreak  string
 	nowFunc    func() time.Time
 	dateFormat string
 	color      bool
 	padding    bool
+	wlock      sync.Mutex
 }
 
 func New(name string) *Logger {
@@ -108,12 +110,12 @@ func (l *Logger) AddColoredAppenderWithFilter(appender Appender, filter Filter) 
 }
 
 func (l *Logger) addAppender(appender Appender, filter Filter, color bool) {
-	appenderContainer := &appenderWithFilter{
+	container := &appenderContainer{
 		appender: appender,
 		filter:   filter,
 		color:    color,
 	}
-	l.appenders = append(l.appenders, appenderContainer)
+	l.appenders = append(l.appenders, container)
 }
 
 func (l *Logger) EnableColor() {
@@ -169,15 +171,21 @@ func (l *Logger) Log(level Level, content string) {
 	l.log(msg)
 }
 
+func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
+	container.mutex.Lock()
+	defer container.mutex.Unlock()
+	container.appender.Append(msg)
+}
+
 func (l *Logger) log(msg *Message) {
 	if msg.Level < l.Level() {
 		return
 	}
 
-	for _, appenderContainer := range l.appenders {
-		if appenderContainer.filter == nil || appenderContainer.filter.ShouldLog(msg) {
-			msg.color = l.color && appenderContainer.color
-			appenderContainer.appender.Append(msg)
+	for _, container := range l.appenders {
+		if container.filter == nil || container.filter.ShouldLog(msg) {
+			msg.color = l.color && container.color
+			l.makeAppend(container, msg)
 		}
 	}
 }

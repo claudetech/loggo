@@ -3,12 +3,14 @@ package loggo
 import (
 	"io"
 	"os"
+	"sync"
 )
 
-type appenderWithFilter struct {
+type appenderContainer struct {
 	appender Appender
 	filter   Filter
 	color    bool
+	mutex    sync.Mutex
 }
 
 type Appender interface {
