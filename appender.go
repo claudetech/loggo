@@ -6,10 +6,16 @@ import (
 	"sync"
 )
 
+const (
+	Color  = 1 << iota
+	Async  = 1 << iota
+	NoLock = 1 << iota
+)
+
 type appenderContainer struct {
 	appender Appender
 	filter   Filter
-	color    bool
+	flags    int
 	wlock    sync.Mutex
 }
 

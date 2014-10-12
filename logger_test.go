@@ -44,7 +44,7 @@ var _ = Describe("Logger", func() {
 	BeforeEach(func() {
 		logger = New(name)
 		appender = &dummyAppender{}
-		logger.AddAppender(appender)
+		logger.AddAppender(appender, 0)
 		logger.SetNowFunc(dummyTime)
 		logger.DisablePadding()
 		tpl, _ = template.New("foo").Parse(defaultFormat)
@@ -63,7 +63,7 @@ var _ = Describe("Logger", func() {
 	It("should work with multiple appenders", func() {
 		expected := getString(tpl, msg)
 		expected = expected + expected
-		logger.AddAppender(appender)
+		logger.AddAppender(appender, 0)
 		logger.Debug(content)
 		Expect(appender.str).To(Equal(expected))
 	})
@@ -71,7 +71,7 @@ var _ = Describe("Logger", func() {
 	It("should ignore appenders if filter fails", func() {
 		expected := getString(tpl, msg)
 		filter := &MinLogLevelFilter{MinLevel: Warning}
-		logger.AddAppenderWithFilter(appender, filter)
+		logger.AddAppenderWithFilter(appender, filter, 0)
 		logger.Debug(content)
 		Expect(appender.str).To(Equal(expected))
 	})
@@ -94,5 +94,14 @@ var _ = Describe("Logger", func() {
 		logger.Debugf("%s: %d + %.1f = %.1f", "Eq", 1, 1.1, 2.1)
 		Expect(appender.str).To(Equal("Eq: 1 + 1.1 = 2.1\n"))
 
+	})
+
+	It("should work async", func() {
+		logger.SetFormat("{{.Content}}")
+		logger.AddAppender(appender, Async)
+		logger.Debug("foo")
+		Expect(appender.str).To(Equal("foo\n"))
+		time.Sleep(10 * time.Millisecond) // not very safe way to check
+		Expect(appender.str).To(Equal("foo\nfoo\n"))
 	})
 })

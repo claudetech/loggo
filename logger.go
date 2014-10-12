@@ -94,27 +94,15 @@ func (l *Logger) SetDateFormat(format string) {
 	l.dateFormat = format
 }
 
-func (l *Logger) AddAppender(appender Appender) {
-	l.addAppender(appender, nil, false)
+func (l *Logger) AddAppender(appender Appender, flags int) {
+	l.AddAppenderWithFilter(appender, nil, flags)
 }
 
-func (l *Logger) AddColoredAppender(appender Appender) {
-	l.addAppender(appender, nil, true)
-}
-
-func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter) {
-	l.addAppender(appender, filter, false)
-}
-
-func (l *Logger) AddColoredAppenderWithFilter(appender Appender, filter Filter) {
-	l.addAppender(appender, filter, true)
-}
-
-func (l *Logger) addAppender(appender Appender, filter Filter, color bool) {
+func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter, flags int) {
 	container := &appenderContainer{
 		appender: appender,
 		filter:   filter,
-		color:    color,
+		flags:    flags,
 	}
 	l.appenders = append(l.appenders, container)
 }
@@ -202,8 +190,10 @@ func (l *Logger) Log(level Level, v ...interface{}) {
 }
 
 func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
-	container.wlock.Lock()
-	defer container.wlock.Unlock()
+	if container.flags&NoLock == 0 {
+		container.wlock.Lock()
+		defer container.wlock.Unlock()
+	}
 	container.appender.Append(msg)
 }
 
@@ -214,8 +204,12 @@ func (l *Logger) log(msg *Message) {
 
 	for _, container := range l.appenders {
 		if container.filter == nil || container.filter.ShouldLog(msg) {
-			msg.color = l.color && container.color
-			l.makeAppend(container, msg)
+			msg.color = l.color && (container.flags&Color != 0)
+			if container.flags&Async == 0 {
+				l.makeAppend(container, msg)
+			} else {
+				go l.makeAppend(container, msg)
+			}
 		}
 	}
 }
