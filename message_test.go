@@ -45,4 +45,10 @@ var _ = Describe("Message", func() {
 		msg.dateFormat = f
 		Expect(msg.Format(tpl)).To(ContainSubstring(msg.Time.Format(f)))
 	})
+
+	It("should work with padding", func() {
+		msg.padding = true
+		tpl, _ := template.New("foo").Parse("{{.LevelStr}}:")
+		Expect(msg.Format(tpl)).To(Equal("DEBUG  :"))
+	})
 })

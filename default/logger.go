@@ -6,6 +6,7 @@ import (
 
 var Log *loggo.Logger = func() *loggo.Logger {
 	log := loggo.New("default")
-	log.AddAppender(loggo.NewStdoutAppender())
+	log.AddColoredAppenderWithFilter(loggo.NewStdoutAppender(), &loggo.MaxLogLevelFilter{MaxLevel: loggo.Info})
+	log.AddColoredAppenderWithFilter(loggo.NewStderrAppender(), &loggo.MinLogLevelFilter{MinLevel: loggo.Warning})
 	return log
 }()

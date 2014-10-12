@@ -7,20 +7,23 @@ import (
 )
 
 var _ = Describe("Filter", func() {
+	var msg *Message
+	var filter Filter
 
-	Describe("LogLevelFilter", func() {
-		var filter *LogLevelFilter
-		var msg *Message
+	BeforeEach(func() {
+		msg = &Message{
+			Name:       "foo",
+			Level:      Debug,
+			Content:    "bar",
+			Time:       time.Now(),
+			dateFormat: defaultDateFormat,
+		}
+	})
 
+	Describe("MinLogLevelFilter", func() {
 		BeforeEach(func() {
-			filter = &LogLevelFilter{MinLevel: Info}
-			msg = &Message{
-				Name:       "foo",
-				Level:      Debug,
-				Content:    "bar",
-				Time:       time.Now(),
-				dateFormat: defaultDateFormat,
-			}
+			filter = &MinLogLevelFilter{MinLevel: Info}
+
 		})
 
 		It("should return true when log level is high enough", func() {
@@ -29,6 +32,20 @@ var _ = Describe("Filter", func() {
 			Expect(filter.ShouldLog(msg)).To(BeTrue())
 			msg.Level = Warning
 			Expect(filter.ShouldLog(msg)).To(BeTrue())
+		})
+	})
+
+	Describe("MaxLogLevelFilter", func() {
+		BeforeEach(func() {
+			filter = &MaxLogLevelFilter{MaxLevel: Info}
+		})
+
+		It("should return true when log level is high enough", func() {
+			Expect(filter.ShouldLog(msg)).To(BeTrue())
+			msg.Level = Info
+			Expect(filter.ShouldLog(msg)).To(BeTrue())
+			msg.Level = Warning
+			Expect(filter.ShouldLog(msg)).To(BeFalse())
 		})
 	})
 })

@@ -1,6 +1,7 @@
 package loggo
 
 import (
+	"github.com/mgutz/ansi"
 	"strings"
 	"text/template"
 	"time"
@@ -20,6 +21,8 @@ type Logger struct {
 	linebreak  string
 	nowFunc    func() time.Time
 	dateFormat string
+	color      bool
+	padding    bool
 }
 
 func New(name string) *Logger {
@@ -29,6 +32,8 @@ func New(name string) *Logger {
 		name:       name,
 		linebreak:  "\n",
 		dateFormat: defaultDateFormat,
+		color:      true,
+		padding:    true,
 	}
 	logger.SetFormat(defaultFormat)
 	return logger
@@ -88,15 +93,36 @@ func (l *Logger) SetDateFormat(format string) {
 }
 
 func (l *Logger) AddAppender(appender Appender) {
-	l.AddAppenderWithFilter(appender, nil)
+	l.addAppender(appender, nil, false)
+}
+
+func (l *Logger) AddColoredAppender(appender Appender) {
+	l.addAppender(appender, nil, true)
 }
 
 func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter) {
+	l.addAppender(appender, filter, false)
+}
+
+func (l *Logger) AddColoredAppenderWithFilter(appender Appender, filter Filter) {
+	l.addAppender(appender, filter, true)
+}
+
+func (l *Logger) addAppender(appender Appender, filter Filter, color bool) {
 	appenderContainer := &appenderWithFilter{
 		appender: appender,
 		filter:   filter,
+		color:    color,
 	}
 	l.appenders = append(l.appenders, appenderContainer)
+}
+
+func (l *Logger) EnableColor() {
+	l.color = true
+}
+
+func (l *Logger) DisableColor() {
+	l.color = true
 }
 
 func (l *Logger) Verbose(content string) {
@@ -119,6 +145,18 @@ func (l *Logger) Error(content string) {
 	l.Log(Error, content)
 }
 
+func (l *Logger) Critical(content string) {
+	l.Log(Critical, content)
+}
+
+func (l *Logger) EnablePadding() {
+	l.padding = true
+}
+
+func (l *Logger) DisablePadding() {
+	l.padding = false
+}
+
 func (l *Logger) Log(level Level, content string) {
 	msg := &Message{
 		Name:       l.Name(),
@@ -126,6 +164,7 @@ func (l *Logger) Log(level Level, content string) {
 		Content:    content,
 		Time:       l.nowFunc(),
 		dateFormat: l.DateFormat(),
+		padding:    l.padding,
 	}
 	l.log(msg)
 }
@@ -137,7 +176,11 @@ func (l *Logger) log(msg *Message) {
 
 	for _, appenderContainer := range l.appenders {
 		if appenderContainer.filter == nil || appenderContainer.filter.ShouldLog(msg) {
-			appenderContainer.appender.Append(msg.Format(l.tpl))
+			str := msg.Format(l.tpl)
+			if l.color && appenderContainer.color {
+				str = ansi.Color(str, Colors[msg.Level])
+			}
+			appenderContainer.appender.Append(str, msg.Level)
 		}
 	}
 }

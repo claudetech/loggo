@@ -8,6 +8,7 @@ const (
 	Info
 	Warning
 	Error
+	Critical
 )
 
 func (l Level) String() string {
@@ -22,6 +23,8 @@ func (l Level) String() string {
 		return "WARNING"
 	case Error:
 		return "ERROR"
+	case Critical:
+		return "CRITIC"
 	default:
 		return "UNKNOWN"
 	}

@@ -4,10 +4,18 @@ type Filter interface {
 	ShouldLog(msg *Message) bool
 }
 
-type LogLevelFilter struct {
+type MinLogLevelFilter struct {
 	MinLevel Level
 }
 
-func (f *LogLevelFilter) ShouldLog(msg *Message) bool {
+func (f *MinLogLevelFilter) ShouldLog(msg *Message) bool {
 	return msg.Level >= f.MinLevel
+}
+
+type MaxLogLevelFilter struct {
+	MaxLevel Level
+}
+
+func (f *MaxLogLevelFilter) ShouldLog(msg *Message) bool {
+	return msg.Level <= f.MaxLevel
 }

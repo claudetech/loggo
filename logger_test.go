@@ -12,7 +12,7 @@ type dummyAppender struct {
 	str string
 }
 
-func (d *dummyAppender) Append(msg string) {
+func (d *dummyAppender) Append(msg string, level Level) {
 	d.str += msg
 }
 
@@ -46,6 +46,7 @@ var _ = Describe("Logger", func() {
 		appender = &dummyAppender{}
 		logger.AddAppender(appender)
 		logger.SetNowFunc(dummyTime)
+		logger.DisablePadding()
 		tpl, _ = template.New("foo").Parse(defaultFormat)
 	})
 
@@ -69,9 +70,22 @@ var _ = Describe("Logger", func() {
 
 	It("should ignore appenders if filter fails", func() {
 		expected := getString(tpl, msg)
-		filter := &LogLevelFilter{MinLevel: Warning}
+		filter := &MinLogLevelFilter{MinLevel: Warning}
 		logger.AddAppenderWithFilter(appender, filter)
 		logger.Debug(content)
 		Expect(appender.str).To(Equal(expected))
+	})
+
+	It("should respect format", func() {
+		logger.SetFormat("{{.Content}}")
+		logger.Debug(content)
+		Expect(appender.str).To(Equal(content + "\n"))
+	})
+
+	It("should add padding", func() {
+		logger.SetFormat("{{.LevelStr}}:")
+		logger.EnablePadding()
+		logger.Debug("foo")
+		Expect(appender.str).To(Equal("DEBUG  :\n"))
 	})
 })

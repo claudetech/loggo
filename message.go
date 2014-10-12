@@ -12,17 +12,17 @@ type Message struct {
 	Content    string
 	Time       time.Time
 	dateFormat string
+	padding    bool
 }
 
 func (m *Message) LevelStr() string {
-	return m.Level.String()
-}
-
-func newMessage(level Level, content string) *Message {
-	return &Message{
-		Level:   level,
-		Content: content,
+	str := m.Level.String()
+	if m.padding {
+		for len(str) < 7 {
+			str += " "
+		}
 	}
+	return str
 }
 
 func (m *Message) Format(tpl *template.Template) string {

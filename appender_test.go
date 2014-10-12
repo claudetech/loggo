@@ -12,7 +12,7 @@ var _ = Describe("Appender", func() {
 		It("should write to Writer", func() {
 			w := bytes.NewBufferString("")
 			appender := NewWriterAppender(w)
-			appender.Append("foobar")
+			appender.Append("foobar", Debug)
 			Expect(w.String()).To(Equal("foobar"))
 		})
 	})
