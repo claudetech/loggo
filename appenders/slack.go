@@ -20,6 +20,7 @@ type slackMessage struct {
 	Text     string `json:"text"`
 }
 
+// Returns an appender that sends messages to Slack
 func NewSlackAppender(url string, username string, icon string, channel string) *slackAppender {
 	client := http.DefaultClient
 	slackMessage := &slackMessage{

@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Defaults logger to use for simple cases
 var Log *loggo.Logger = func() *loggo.Logger {
 	name := strings.TrimLeft(strings.ToUpper(os.Args[0]), "./")
 	log := loggo.New(name)
