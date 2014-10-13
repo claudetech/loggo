@@ -158,4 +158,4 @@ The date is formatted using `Time.Format()`. You can change the date
 format using `logger.SetDateFormat(string)`.
 
 
-For more information, please consult the documentation.
+For more information, please consult [the documentation](http://godoc.org/github.com/claudetech/loggo).
