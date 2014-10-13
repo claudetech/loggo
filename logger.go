@@ -3,6 +3,7 @@ package loggo
 import (
 	"fmt"
 	"io"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -27,6 +28,7 @@ type Logger struct {
 	color        bool
 	padding      bool
 	lockSettings bool
+	callerInfo   bool
 	wlock        sync.Mutex
 }
 
@@ -39,6 +41,7 @@ func New(name string) *Logger {
 		dateFormat:   defaultDateFormat,
 		color:        true,
 		padding:      true,
+		callerInfo:   false,
 		lockSettings: false,
 	}
 	logger.SetFormat(defaultFormat)
@@ -124,6 +127,13 @@ func (l *Logger) SetFormat(format string) error {
 	}
 	l.format = format
 	l.tpl = tpl
+	l.callerInfo = false
+	for _, str := range []string{"{{.Line}}", "{{.File}}", "{{.FuncName}}"} {
+		if strings.Contains(l.format, str) {
+			l.callerInfo = true
+			break
+		}
+	}
 	return nil
 }
 
@@ -248,21 +258,35 @@ func (l *Logger) Fatal(v ...interface{}) {
 	l.Log(Fatal, v...)
 }
 
-func (l *Logger) Logf(level Level, format string, v ...interface{}) {
-	msg := fmt.Sprintf(format, v...)
-	l.Log(level, msg)
-}
-
-func (l *Logger) Log(level Level, v ...interface{}) {
+func (l *Logger) makeMessage(level Level, str string) *Message {
 	msg := &Message{
 		Name:       l.Name(),
 		Level:      level,
-		Content:    fmt.Sprint(v...),
+		Content:    str,
 		Time:       l.nowFunc(),
 		dateFormat: l.DateFormat(),
 		padding:    l.padding,
 		tpl:        l.tpl,
 	}
+	if l.callerInfo {
+		if pc, file, line, ok := runtime.Caller(3); ok {
+			msg.File = file
+			msg.Line = line
+			if f := runtime.FuncForPC(pc); f != nil {
+				msg.FuncName = f.Name()
+			}
+		}
+	}
+	return msg
+}
+
+func (l *Logger) Logf(level Level, format string, v ...interface{}) {
+	msg := l.makeMessage(level, fmt.Sprintf(format, v...))
+	l.log(msg)
+}
+
+func (l *Logger) Log(level Level, v ...interface{}) {
+	msg := l.makeMessage(level, fmt.Sprint(v...))
 	l.log(msg)
 }
 

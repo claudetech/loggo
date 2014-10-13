@@ -4,6 +4,8 @@ import (
 	"bytes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"strconv"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -103,6 +105,20 @@ var _ = Describe("Logger", func() {
 		Expect(appender.str).To(Equal("foo\n"))
 		time.Sleep(10 * time.Millisecond) // not very safe way to check
 		Expect(appender.str).To(Equal("foo\nfoo\n"))
+	})
+
+	It("should set logger info", func() {
+		Expect(logger.callerInfo).To(BeFalse())
+		logger.SetFormat("{{.Line}}")
+		Expect(logger.callerInfo).To(BeTrue())
+	})
+
+	It("should output line number", func() {
+		logger.SetFormat("{{.Line}}")
+		logger.Debug("foo")
+		n, err := strconv.Atoi(strings.TrimRight(appender.str, "\n"))
+		Expect(err).To(BeNil())
+		Expect(n).To(BeNumerically(">", 0))
 	})
 
 	It("should be destroyed", func() {

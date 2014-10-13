@@ -14,6 +14,9 @@ type Message struct {
 	Level      Level
 	Content    interface{}
 	Time       time.Time
+	File       string
+	Line       int
+	FuncName   string
 	dateFormat string
 	padding    bool
 	color      bool
