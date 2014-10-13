@@ -1,16 +1,24 @@
 package loggo
 
+// Type representing the log level
 type Level int32
 
 const (
+	// Trace log level
 	Trace Level = iota
+	// Debug log level
 	Debug
+	// Info log level
 	Info
+	// Warning log level
 	Warning
+	// Error log level
 	Error
+	// Fatal log level
 	Fatal
 )
 
+// Returns a string representation of the log level
 func (l Level) String() string {
 	switch l {
 	case Trace:

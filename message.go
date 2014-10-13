@@ -9,13 +9,21 @@ import (
 	"time"
 )
 
+// Message Represent a single log
 type Message struct {
-	Name       string
-	Level      Level
-	Content    interface{}
-	Time       time.Time
-	File       string
-	Line       int
+	// The name of the logger
+	Name string
+	// The level of the message
+	Level Level
+	// The content of the log
+	Content interface{}
+	// The time of the log
+	Time time.Time
+	// The file of the log call
+	File string
+	// The line number of the log call
+	Line int
+	// The function name of the log call
 	FuncName   string
 	dateFormat string
 	padding    bool
@@ -23,10 +31,12 @@ type Message struct {
 	tpl        *template.Template
 }
 
+// Returns the logger name upper cased
 func (m *Message) NameUp() string {
 	return strings.ToUpper(m.Name)
 }
 
+// Formats the log level
 func (m *Message) LevelStr() string {
 	str := m.Level.String()
 	if m.padding {
@@ -37,6 +47,7 @@ func (m *Message) LevelStr() string {
 	return str
 }
 
+// Returns a formatted representation of the message
 func (m *Message) String() string {
 	buffer := bytes.NewBufferString("")
 	err := m.tpl.Execute(buffer, m)
@@ -50,6 +61,7 @@ func (m *Message) String() string {
 	return str
 }
 
+// Formats the time
 func (m *Message) TimeStr() string {
 	return m.Time.Format(m.dateFormat)
 }

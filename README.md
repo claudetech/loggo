@@ -102,12 +102,9 @@ func NewStdoutAppender() Appender {
 
 so you can easily add any appender.
 
-When using `AddAppender`, the flags can be `NoLock`,
-`Color` or `Async`.
+When using `AddAppender`, the flags can be `Color` and/or `Async`.
 `Async` is useful when the log can take some time,
 for example when sending by HTTP.
-`NoLock` is used when the appender itself is already
-thread safe.
 `Color` is for a colored output in the terminal,
 so mainly good for `Stdout` and `Stderr` appenders.
 
@@ -130,3 +127,35 @@ method. For example, the default logger is defined as follow:
 
 All messages with a level below or equal to `Info` are logged to `stdout`,
 and all messages with a level above or equal to `Warning` are logged to `stderr`.
+
+## Configuration
+
+Almost everything in loggo is configurable.
+
+### Format
+
+One of the most common configuration is the format of the output.
+loggo uses `text/template` to format the output, and the default format is
+
+```
+"[{{.NameUp}}] [{{.TimeStr}}] {{.LevelStr}}: {{.Content}}"
+```
+
+The available placeholders are:
+
+* `NameUp`: The upper cased name of the logger
+* `Name`: The name of the logger
+* `TimeStr`: The formatted time
+* `LevelStr`: The string for the log level
+* `Content`: The content of the log message
+* `File`: The file which the log comes from
+* `Line`: The line number which the log comes from
+* `FuncName`: The function from which `Log` has been called
+
+### Date format
+
+The date is formatted using `Time.Format()`. You can change the date
+format using `logger.SetDateFormat(string)`.
+
+
+For more information, please consult the documentation.
