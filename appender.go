@@ -6,10 +6,9 @@ import (
 	"sync"
 )
 
+// Flags to modify behavior of the appender
 const (
-	// Color enabled flag
 	Color = 1 << iota
-	// Aync behavior flag
 	Async = 1 << iota
 )
 
@@ -27,8 +26,6 @@ var (
 
 // Interface to append logs
 type Appender interface {
-	// Takes a message pointer and should
-	// use it to log the message.
 	Append(*Message)
 }
 

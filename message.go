@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Message Represent a single log
+// Structure representing a single log message
 type Message struct {
 	// The name of the logger
 	Name string
