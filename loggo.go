@@ -1,5 +1,4 @@
-// Package loggo provides easy to use
-// and extensible logging functionality
+// Easy to use, configurable and extensible logging library
 package loggo
 
 // Flag representing all options turned off
