@@ -211,51 +211,51 @@ func (l *Logger) DisablePadding() {
 }
 
 func (l *Logger) Tracef(format string, v ...interface{}) {
-	l.Logf(Trace, format, v...)
+	l.logf(Trace, format, v...)
 }
 
 func (l *Logger) Debugf(format string, v ...interface{}) {
-	l.Logf(Debug, format, v...)
+	l.logf(Debug, format, v...)
 }
 
 func (l *Logger) Infof(format string, v ...interface{}) {
-	l.Logf(Info, format, v...)
+	l.logf(Info, format, v...)
 }
 
 func (l *Logger) Warningf(format string, v ...interface{}) {
-	l.Logf(Warning, format, v...)
+	l.logf(Warning, format, v...)
 }
 
 func (l *Logger) Errorf(format string, v ...interface{}) {
-	l.Logf(Error, format, v...)
+	l.logf(Error, format, v...)
 }
 
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	l.Logf(Fatal, format, v...)
+	l.logf(Fatal, format, v...)
 }
 
 func (l *Logger) Trace(v ...interface{}) {
-	l.Log(Trace, v...)
+	l.log(Trace, v...)
 }
 
 func (l *Logger) Debug(v ...interface{}) {
-	l.Log(Debug, v...)
+	l.log(Debug, v...)
 }
 
 func (l *Logger) Info(v ...interface{}) {
-	l.Log(Info, v...)
+	l.log(Info, v...)
 }
 
 func (l *Logger) Warning(v ...interface{}) {
-	l.Log(Warning, v...)
+	l.log(Warning, v...)
 }
 
 func (l *Logger) Error(v ...interface{}) {
-	l.Log(Error, v...)
+	l.log(Error, v...)
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
-	l.Log(Fatal, v...)
+	l.log(Fatal, v...)
 }
 
 func (l *Logger) makeMessage(level Level, str string) *Message {
@@ -281,13 +281,51 @@ func (l *Logger) makeMessage(level Level, str string) *Message {
 }
 
 func (l *Logger) Logf(level Level, format string, v ...interface{}) {
-	msg := l.makeMessage(level, fmt.Sprintf(format, v...))
-	l.log(msg)
+	l.logf(level, format, v...)
 }
 
 func (l *Logger) Log(level Level, v ...interface{}) {
+	l.log(level, v...)
+}
+
+func (l *Logger) logf(level Level, format string, v ...interface{}) {
+	msg := l.makeMessage(level, fmt.Sprintf(format, v...))
+	l.outputLog(msg)
+}
+
+func (l *Logger) log(level Level, v ...interface{}) {
 	msg := l.makeMessage(level, fmt.Sprint(v...))
-	l.log(msg)
+	l.outputLog(msg)
+}
+
+func (l *Logger) outputLog(msg *Message) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+
+	if msg.Level < l.level {
+		return
+	}
+
+	for _, container := range l.appenders {
+		if container.filter == nil || container.filter.ShouldLog(msg) {
+			msg.color = l.color && (container.flags&Color != 0)
+			if container.flags&Async == 0 {
+				l.makeAppend(container, msg)
+			} else {
+				go l.makeAppend(container, msg)
+			}
+		}
+	}
+}
+
+func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
+	if container.flags&NoLock == 0 {
+		container.wlock.Lock()
+		defer container.wlock.Unlock()
+	}
+	container.appender.Append(msg)
 }
 
 func (l *Logger) destroyAppender(appender Appender) error {
@@ -308,34 +346,4 @@ func (l *Logger) Destroy() (err error) {
 	l.appenders = nil
 	delete(loggers, l.name)
 	return
-}
-
-func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
-	if container.flags&NoLock == 0 {
-		container.wlock.Lock()
-		defer container.wlock.Unlock()
-	}
-	container.appender.Append(msg)
-}
-
-func (l *Logger) log(msg *Message) {
-	if l.lockSettings {
-		l.wlock.Lock()
-		defer l.wlock.Unlock()
-	}
-
-	if msg.Level < l.level {
-		return
-	}
-
-	for _, container := range l.appenders {
-		if container.filter == nil || container.filter.ShouldLog(msg) {
-			msg.color = l.color && (container.flags&Color != 0)
-			if container.flags&Async == 0 {
-				l.makeAppend(container, msg)
-			} else {
-				go l.makeAppend(container, msg)
-			}
-		}
-	}
 }
