@@ -15,68 +15,114 @@ const (
 )
 
 type Logger struct {
-	name       string
-	format     string
-	tpl        *template.Template
-	level      Level
-	appenders  []*appenderContainer
-	linebreak  string
-	nowFunc    func() time.Time
-	dateFormat string
-	color      bool
-	padding    bool
-	wlock      sync.Mutex
+	name         string
+	format       string
+	tpl          *template.Template
+	level        Level
+	appenders    []*appenderContainer
+	linebreak    string
+	nowFunc      func() time.Time
+	dateFormat   string
+	color        bool
+	padding      bool
+	lockSettings bool
+	wlock        sync.Mutex
 }
 
 func New(name string) *Logger {
 	logger := &Logger{
-		level:      Debug,
-		nowFunc:    time.Now,
-		name:       name,
-		linebreak:  "\n",
-		dateFormat: defaultDateFormat,
-		color:      true,
-		padding:    true,
+		level:        Debug,
+		nowFunc:      time.Now,
+		name:         name,
+		linebreak:    "\n",
+		dateFormat:   defaultDateFormat,
+		color:        true,
+		padding:      true,
+		lockSettings: false,
 	}
 	logger.SetFormat(defaultFormat)
 	return logger
 }
 
 func (l *Logger) Name() string {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	return l.name
 }
 
+func (l *Logger) ThreasafeSettings() bool {
+	return l.lockSettings
+}
+
+func (l *Logger) SetThreasafeSettings(b bool) {
+	l.lockSettings = b
+}
+
 func (l *Logger) SetName(name string) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.name = name
 }
 
 func (l *Logger) SetNowFunc(f func() time.Time) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.nowFunc = f
 }
 
 func (l *Logger) Level() Level {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	return l.level
 }
 
 func (l *Logger) SetLevel(level Level) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.level = level
 }
 
 func (l *Logger) Linebreak() string {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	return l.linebreak
 }
 
 func (l *Logger) SetLineBreak(linebreak string) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.linebreak = linebreak
 }
 
-func (b *Logger) Format() string {
-	return b.format
+func (l *Logger) Format() string {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+	return l.format
 }
 
 func (l *Logger) SetFormat(format string) error {
-	if !strings.HasSuffix(format, l.Linebreak()) {
-		format += l.Linebreak()
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+	if !strings.HasSuffix(format, l.linebreak) {
+		format += l.linebreak
 	}
 	tpl, err := template.New("loggerTemplate").Parse(format)
 	if err != nil {
@@ -88,10 +134,18 @@ func (l *Logger) SetFormat(format string) error {
 }
 
 func (l *Logger) DateFormat() string {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	return l.dateFormat
 }
 
 func (l *Logger) SetDateFormat(format string) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.dateFormat = format
 }
 
@@ -109,11 +163,33 @@ func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter, flags i
 }
 
 func (l *Logger) EnableColor() {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.color = true
 }
 
 func (l *Logger) DisableColor() {
+	l.wlock.Lock()
+	defer l.wlock.Unlock()
 	l.color = true
+}
+
+func (l *Logger) EnablePadding() {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+	l.padding = true
+}
+
+func (l *Logger) DisablePadding() {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+	l.padding = false
 }
 
 func (l *Logger) Verbosef(format string, v ...interface{}) {
@@ -164,14 +240,6 @@ func (l *Logger) Critical(v ...interface{}) {
 	l.Log(Critical, v...)
 }
 
-func (l *Logger) EnablePadding() {
-	l.padding = true
-}
-
-func (l *Logger) DisablePadding() {
-	l.padding = false
-}
-
 func (l *Logger) Logf(level Level, format string, v ...interface{}) {
 	msg := fmt.Sprintf(format, v...)
 	l.Log(level, msg)
@@ -198,6 +266,8 @@ func (l *Logger) destroyAppender(appender Appender) error {
 }
 
 func (l *Logger) Destroy() (err error) {
+	l.wlock.Lock()
+	defer l.wlock.Unlock()
 	for _, container := range l.appenders {
 		if e := l.destroyAppender(container.appender); e != nil {
 			err = e
@@ -216,7 +286,12 @@ func (l *Logger) makeAppend(container *appenderContainer, msg *Message) {
 }
 
 func (l *Logger) log(msg *Message) {
-	if msg.Level < l.Level() {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+
+	if msg.Level < l.level {
 		return
 	}
 
