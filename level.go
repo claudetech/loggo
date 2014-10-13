@@ -1,6 +1,6 @@
 package loggo
 
-type Level int
+type Level int32
 
 const (
 	Verbose Level = iota

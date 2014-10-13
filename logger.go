@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"text/template"
 	"time"
 )
@@ -77,19 +78,11 @@ func (l *Logger) SetNowFunc(f func() time.Time) {
 }
 
 func (l *Logger) Level() Level {
-	if l.lockSettings {
-		l.wlock.Lock()
-		defer l.wlock.Unlock()
-	}
-	return l.level
+	return Level(atomic.LoadInt32((*int32)(&l.level)))
 }
 
 func (l *Logger) SetLevel(level Level) {
-	if l.lockSettings {
-		l.wlock.Lock()
-		defer l.wlock.Unlock()
-	}
-	l.level = level
+	atomic.StoreInt32((*int32)(&l.level), int32(level))
 }
 
 func (l *Logger) Linebreak() string {
@@ -170,9 +163,19 @@ func (l *Logger) EnableColor() {
 	l.color = true
 }
 
+func (l *Logger) Color() bool {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
+	return l.color
+}
+
 func (l *Logger) DisableColor() {
-	l.wlock.Lock()
-	defer l.wlock.Unlock()
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.color = true
 }
 
