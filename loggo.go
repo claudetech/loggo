@@ -1,5 +1,7 @@
 package loggo
 
+const EmptyFlag = 0
+
 var Colors = map[Level]string{
 	Trace:   "white",
 	Debug:   "blue",

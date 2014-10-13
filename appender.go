@@ -44,7 +44,7 @@ func NewStderrAppender() Appender {
 }
 
 func NewFileAppender(path string) (Appender, error) {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0664)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0664)
 	return NewWriterAppender(f), err
 }
 
