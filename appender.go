@@ -36,11 +36,11 @@ func NewWriterAppender(writer io.Writer) Appender {
 }
 
 func NewStdoutAppender() Appender {
-	return &writerAppender{writer: os.Stdout}
+	return NewWriterAppender(os.Stdout)
 }
 
 func NewStderrAppender() Appender {
-	return &writerAppender{writer: os.Stderr}
+	return NewWriterAppender(os.Stderr)
 }
 
 func NewFileAppender(path string) (Appender, error) {

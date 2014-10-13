@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type SlackAppender struct {
+type slackAppender struct {
 	url     string
 	client  *http.Client
 	message *slackMessage
@@ -20,20 +20,20 @@ type slackMessage struct {
 	Text     string `json:"text"`
 }
 
-func NewSlackAppender(url string, username string, icon string, channel string) *SlackAppender {
+func NewSlackAppender(url string, username string, icon string, channel string) *slackAppender {
 	client := http.DefaultClient
 	slackMessage := &slackMessage{
 		Username: username,
 		Icon:     icon,
 		Channel:  channel,
 	}
-	return &SlackAppender{
+	return &slackAppender{
 		url:     url,
 		client:  client,
 		message: slackMessage,
 	}
 }
-func (s *SlackAppender) Append(msg *loggo.Message) {
+func (s *slackAppender) Append(msg *loggo.Message) {
 	s.message.Text = msg.String()
 	body, err := json.Marshal(s.message)
 	if err != nil {
