@@ -1,4 +1,4 @@
-// Easy to use, configurable and extensible logging library
+// Package loggo is an easy to use, configurable and extensible logging library
 package loggo
 
 // Flag representing all options turned off
@@ -18,8 +18,8 @@ var Colors = map[Level]string{
 
 var loggers = make(map[string]*Logger)
 
-// Retreive the logger with the given name
-// Return nil if no such logger exists
+// Get retreives the logger with the given name.
+// Returns nil if no such logger exists
 func Get(name string) *Logger {
 	if logger, ok := loggers[name]; ok {
 		return logger
