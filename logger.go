@@ -58,10 +58,18 @@ func (l *Logger) Name() string {
 }
 
 func (l *Logger) ThreasafeSettings() bool {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	return l.lockSettings
 }
 
 func (l *Logger) SetThreasafeSettings(b bool) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	l.lockSettings = b
 }
 
