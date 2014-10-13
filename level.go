@@ -1,6 +1,6 @@
 package loggo
 
-// Type representing the log level
+// Level represents representing the log level
 type Level int32
 
 // Constants representing each log level

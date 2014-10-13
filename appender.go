@@ -24,7 +24,7 @@ var (
 	stderr io.Writer = os.Stderr
 )
 
-// Interface to append logs
+// Appender is the interface used to log messages
 type Appender interface {
 	Append(*Message)
 }
@@ -37,22 +37,22 @@ func (w *writerAppender) Append(msg *Message) {
 	_, _ = io.WriteString(w.writer, msg.String())
 }
 
-// Creates a new appender that logs to the given io.Writer
+// NewWriterAppender creates a new appender that logs to the given io.Writer
 func NewWriterAppender(writer io.Writer) Appender {
 	return &writerAppender{writer: writer}
 }
 
-// Creates a new appender that logs to stdout
+// NewStdoutAppender creates a new appender that logs to stdout
 func NewStdoutAppender() Appender {
 	return NewWriterAppender(stdout)
 }
 
-// Creates a new appender that logs to stderr
+// NewStderrAppender creates a new appender that logs to stderr
 func NewStderrAppender() Appender {
 	return NewWriterAppender(stderr)
 }
 
-// Creates a new appender that append logs to the given file
+// NewFileAppender creates a new appender that append logs to the given file
 func NewFileAppender(path string) (Appender, error) {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0664)
 	return NewWriterAppender(f), err

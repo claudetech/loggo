@@ -16,7 +16,7 @@ const (
 	defaultDateFormat = "2006-01-02 15:04"
 )
 
-// Basic struct for all logging operations
+// Logger is the basic struct for all logging operations
 type Logger struct {
 	name       string
 	format     string
@@ -32,7 +32,7 @@ type Logger struct {
 	wlock      sync.Mutex
 }
 
-// Creates a new logger and registers it.
+// New creates a new logger and registers it.
 // The logger can then either be used directly
 // or retreived using the name passed as argument.
 func New(name string) *Logger {
@@ -51,21 +51,21 @@ func New(name string) *Logger {
 	return logger
 }
 
-// Returns the name of the logger
+// Name returns the name of the logger
 func (l *Logger) Name() string {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	return l.name
 }
 
-// Set the name of the logger
+// SetName set the name of the logger
 func (l *Logger) SetName(name string) {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	l.name = name
 }
 
-// Set the function used to get the current time.
+// SetNowFunc set the function used to get the current time.
 // Defaults to time.Now
 func (l *Logger) SetNowFunc(f func() time.Time) {
 	l.wlock.Lock()
@@ -73,24 +73,24 @@ func (l *Logger) SetNowFunc(f func() time.Time) {
 	l.nowFunc = f
 }
 
-// Get the current log level
+// Level returns the current log level
 func (l *Logger) Level() Level {
 	return Level(atomic.LoadInt32((*int32)(&l.level)))
 }
 
-// Set the current log level
+// SetLevel set the current log level
 func (l *Logger) SetLevel(level Level) {
 	atomic.StoreInt32((*int32)(&l.level), int32(level))
 }
 
-// Get the string used as linebreak
+// Linebreak returns the string used as linebreak
 func (l *Logger) Linebreak() string {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	return l.linebreak
 }
 
-// Set the string to use as linebreak
+// SetLineBreak set the string to use as linebreak
 // Defaults to "\n"
 func (l *Logger) SetLineBreak(linebreak string) error {
 	l.wlock.Lock()
@@ -121,14 +121,14 @@ func (l *Logger) updateTemplate(format string) error {
 	return nil
 }
 
-// Get the current format
+// Format returns the current format
 func (l *Logger) Format() string {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	return l.format
 }
 
-// Set the current format
+// SetFormat set the current format
 // Defaults to "[{{.NameUp}}] [{{.TimeStr}}] {{.LevelStr}}: {{.Content}}"
 func (l *Logger) SetFormat(format string) error {
 	l.wlock.Lock()
@@ -136,14 +136,14 @@ func (l *Logger) SetFormat(format string) error {
 	return l.updateTemplate(format)
 }
 
-// Get the date format
+// DateFormat returns the date format
 func (l *Logger) DateFormat() string {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	return l.dateFormat
 }
 
-// Set the date format
+// SetDateFormat set the date format
 // Defaults to "2006-01-02 15:04"
 func (l *Logger) SetDateFormat(format string) {
 	l.wlock.Lock()
@@ -151,12 +151,12 @@ func (l *Logger) SetDateFormat(format string) {
 	l.dateFormat = format
 }
 
-// Adds an appender to the logger
+// AddAppender adds an appender to the logger
 func (l *Logger) AddAppender(appender Appender, flags int) {
 	l.AddAppenderWithFilter(appender, nil, flags)
 }
 
-// Adds an appender with a filter to the logger
+// AddAppenderWithFilter adds an appender with a filter to the logger
 func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter, flags int) {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
@@ -168,14 +168,14 @@ func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter, flags i
 	l.appenders = append(l.appenders, container)
 }
 
-// Get the current status for global color
+// Color returns the current status for global color
 func (l *Logger) Color() bool {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	return l.color
 }
 
-// Enables color globally.
+// EnableColor enables color globally.
 // Will allow appenders added with the `color` option
 // to use colors.
 func (l *Logger) EnableColor() {
@@ -184,7 +184,7 @@ func (l *Logger) EnableColor() {
 	l.color = true
 }
 
-// Disables color globally.
+// DisableColor disables color globally.
 // Event appenders added with the `color` option
 // will not use colors.
 func (l *Logger) DisableColor() {
@@ -193,7 +193,7 @@ func (l *Logger) DisableColor() {
 	l.color = true
 }
 
-// Enables padding. Will make all log level
+// EnablePadding enables padding so that all log level
 // strings print with the same length.
 func (l *Logger) EnablePadding() {
 	l.wlock.Lock()
@@ -201,69 +201,69 @@ func (l *Logger) EnablePadding() {
 	l.padding = true
 }
 
-// Disables padding
+// DisablePadding disables padding
 func (l *Logger) DisablePadding() {
 	l.wlock.Lock()
 	defer l.wlock.Unlock()
 	l.padding = false
 }
 
-// Format given interfaces and logs with Trace level
+// Tracef formats the given interfaces and logs with Trace level
 func (l *Logger) Tracef(format string, v ...interface{}) {
 	l.logf(Trace, format, v...)
 }
 
-// Format given interfaces and logs with Debug level
+// Debugf formats the given interfaces and logs with Debug level
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	l.logf(Debug, format, v...)
 }
 
-// Format given interfaces and logs with Infof level
+// Infof formats the given interfaces and logs with Info level
 func (l *Logger) Infof(format string, v ...interface{}) {
 	l.logf(Info, format, v...)
 }
 
-// Format given interfaces and logs with Warni level
+// Warningf formats the given interfaces and logs with Warning level
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	l.logf(Warning, format, v...)
 }
 
-// Format given interfaces and logs with Error level
+// Errorf formats the given interfaces and logs with Error level
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.logf(Error, format, v...)
 }
 
-// Format given interfaces and logs with Fatal level
+// Fatalf formats the given interfaces and logs with Fatal level
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.logf(Fatal, format, v...)
 }
 
-// Log the given interfaces with Trace level
+// Trace fogs the the given interfaces with Trace level
 func (l *Logger) Trace(v ...interface{}) {
 	l.log(Trace, v...)
 }
 
-// Log the given interfaces with Debug level
+// Debug fogs the the given interfaces with Debug level
 func (l *Logger) Debug(v ...interface{}) {
 	l.log(Debug, v...)
 }
 
-// Log the given interfaces with Info level
+// Info fogs the the given interfaces with Info level
 func (l *Logger) Info(v ...interface{}) {
 	l.log(Info, v...)
 }
 
-// Log the given interfaces with Warning level
+// Warning fogs the the given interfaces with Warning level
 func (l *Logger) Warning(v ...interface{}) {
 	l.log(Warning, v...)
 }
 
-// Log the given interfaces with Error level
+// Error fogs the the given interfaces with Error level
 func (l *Logger) Error(v ...interface{}) {
 	l.log(Error, v...)
 }
 
-// Log the given interfaces with Fatal level
+// Fatal fogs the the given interfaces with Fatal level
 func (l *Logger) Fatal(v ...interface{}) {
 	l.log(Fatal, v...)
 }
@@ -290,12 +290,12 @@ func (l *Logger) makeMessage(level Level, str string) *Message {
 	return msg
 }
 
-// Formats interfaces with the given format and logs them with the given level
+// Logf formats interfaces with the given format and logs them with the given level
 func (l *Logger) Logf(level Level, format string, v ...interface{}) {
 	l.logf(level, format, v...)
 }
 
-// Logs the interfaces with the given level
+// Log logs the interfaces with the given level
 func (l *Logger) Log(level Level, v ...interface{}) {
 	l.log(level, v...)
 }
@@ -345,7 +345,7 @@ func (l *Logger) destroyAppender(appender Appender) error {
 	return nil
 }
 
-// Destroy the loggers, closing every appender implementing
+// Destroy destroy the loggers, closing every appender implementing
 // the io.Closer interface
 func (l *Logger) Destroy() (err error) {
 	l.wlock.Lock()
