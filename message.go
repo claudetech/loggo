@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/mgutz/ansi"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -17,6 +18,10 @@ type Message struct {
 	padding    bool
 	color      bool
 	tpl        *template.Template
+}
+
+func (m *Message) NameUp() string {
+	return strings.ToUpper(m.Name)
 }
 
 func (m *Message) LevelStr() string {

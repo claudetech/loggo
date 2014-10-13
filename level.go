@@ -3,18 +3,18 @@ package loggo
 type Level int32
 
 const (
-	Verbose Level = iota
+	Trace Level = iota
 	Debug
 	Info
 	Warning
 	Error
-	Critical
+	Fatal
 )
 
 func (l Level) String() string {
 	switch l {
-	case Verbose:
-		return "VERBOSE"
+	case Trace:
+		return "TRACE"
 	case Debug:
 		return "DEBUG"
 	case Info:
@@ -23,8 +23,8 @@ func (l Level) String() string {
 		return "WARNING"
 	case Error:
 		return "ERROR"
-	case Critical:
-		return "CRITIC"
+	case Fatal:
+		return "FATAL"
 	default:
 		return "UNKNOWN"
 	}

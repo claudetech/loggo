@@ -56,7 +56,7 @@ var _ = Describe("Logger", func() {
 	})
 
 	It("should ignore when level is too low", func() {
-		logger.Verbose("foo")
+		logger.Trace("foo")
 		Expect(appender.str).To(BeEmpty())
 	})
 

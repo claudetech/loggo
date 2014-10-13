@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultFormat     = "[{{.Name}}] [{{.TimeStr}}] {{.LevelStr}}: {{.Content}}\n"
+	defaultFormat     = "[{{.NameUp}}] [{{.TimeStr}}] {{.LevelStr}}: {{.Content}}\n"
 	defaultDateFormat = "2006-01-02 15:04"
 )
 
@@ -42,6 +42,7 @@ func New(name string) *Logger {
 		lockSettings: false,
 	}
 	logger.SetFormat(defaultFormat)
+	loggers[name] = logger
 	return logger
 }
 
@@ -147,6 +148,10 @@ func (l *Logger) AddAppender(appender Appender, flags int) {
 }
 
 func (l *Logger) AddAppenderWithFilter(appender Appender, filter Filter, flags int) {
+	if l.lockSettings {
+		l.wlock.Lock()
+		defer l.wlock.Unlock()
+	}
 	container := &appenderContainer{
 		appender: appender,
 		filter:   filter,
@@ -195,8 +200,8 @@ func (l *Logger) DisablePadding() {
 	l.padding = false
 }
 
-func (l *Logger) Verbosef(format string, v ...interface{}) {
-	l.Logf(Verbose, format, v...)
+func (l *Logger) Tracef(format string, v ...interface{}) {
+	l.Logf(Trace, format, v...)
 }
 
 func (l *Logger) Debugf(format string, v ...interface{}) {
@@ -215,12 +220,12 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 	l.Logf(Error, format, v...)
 }
 
-func (l *Logger) Criticalf(format string, v ...interface{}) {
-	l.Logf(Critical, format, v...)
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	l.Logf(Fatal, format, v...)
 }
 
-func (l *Logger) Verbose(v ...interface{}) {
-	l.Log(Verbose, v...)
+func (l *Logger) Trace(v ...interface{}) {
+	l.Log(Trace, v...)
 }
 
 func (l *Logger) Debug(v ...interface{}) {
@@ -239,8 +244,8 @@ func (l *Logger) Error(v ...interface{}) {
 	l.Log(Error, v...)
 }
 
-func (l *Logger) Critical(v ...interface{}) {
-	l.Log(Critical, v...)
+func (l *Logger) Fatal(v ...interface{}) {
+	l.Log(Fatal, v...)
 }
 
 func (l *Logger) Logf(level Level, format string, v ...interface{}) {
@@ -277,6 +282,7 @@ func (l *Logger) Destroy() (err error) {
 		}
 	}
 	l.appenders = nil
+	delete(loggers, l.name)
 	return
 }
 
