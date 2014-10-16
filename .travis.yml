@@ -6,4 +6,6 @@ go:
 notifications:
   slack:
     secure: kHg2SNY1bdgl8mKV02Ci+aPTLn8HV4Cmfrbnnah7wSKPVMCyl8w5hm0K1xEvqI15dVLyQuFk/TXXt0A+l2swt1bM0yzmDCab8Rllt7H9P5qOuCzjLt9ymlCG19+AKJc87/i1ZuDXGt7F7fdeXLw6a/pnEabgVcIDyXeBL/egdI0=
+    on_success: change
+    on_failure: always
   email: false
