@@ -61,6 +61,14 @@ func main() {
 
 The `Debug` is be ignored as the level is set to `Info`.
 
+In your application, you can get the logger anywhere by using
+
+```go
+logger := loggo.Get("logger name")
+```
+
+`Get` will return `nil` if the given name is not found.
+
 ### Appenders
 
 Appenders work more or less like in log4j and company.
